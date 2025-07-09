@@ -40,9 +40,8 @@ curl "http://127.0.0.1:8000/topics"
 curl -X POST "http://127.0.0.1:8000/users" \
   -H "Content-Type: application/json" \
   -d '{
-    "id": "user123",
     "email": "user123@example.com",
-    "name": "Alice Example",
+    "name": "Adi",
     "subscribed_topics": []
   }'
 ```

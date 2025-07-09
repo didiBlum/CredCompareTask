@@ -3,9 +3,10 @@ class UserNotFoundError(Exception):
 
 from fastapi import HTTPException
 from app.db import db
+from bson import ObjectId
 
 def subscribe_user_to_topic(user_id: str, topic_name: str):
-    user = db["users"].find_one({"_id": user_id})
+    user = db["users"].find_one({"_id": ObjectId(user_id)})
     if not user:
         raise UserNotFoundError()
     # Find or create topic by name
@@ -15,5 +16,5 @@ def subscribe_user_to_topic(user_id: str, topic_name: str):
     else:
         topic_id = topic["_id"]
     if topic_id not in user.get("subscribed_topics", []):
-        db["users"].update_one({"_id": user_id}, {"$push": {"subscribed_topics": topic_id}})
+        db["users"].update_one({"_id": ObjectId(user_id)}, {"$push": {"subscribed_topics": topic_id}})
     return {"status": "subscribed", "user_id": user_id, "topic_id": str(topic_id), "topic_name": topic_name} 

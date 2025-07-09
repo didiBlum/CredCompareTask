@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from app.models.item import Item
 from app.db import collection, db
 from pydantic import BaseModel
@@ -25,6 +25,6 @@ async def subscribe_to_topic(req: SubscribeRequest):
     except UserNotFoundError:
         raise HTTPException(status_code=404, detail="User not found")
 
-@router.post("/users")
+@router.post("/users", status_code=status.HTTP_201_CREATED)
 async def create_user(user: User):
     return add_user(user) 
