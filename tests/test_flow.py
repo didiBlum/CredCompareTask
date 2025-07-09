@@ -12,8 +12,7 @@ async def test_user_subscription_flow():
         # 1. Add user
         user_data = {
             "email": "testuser@example.com",
-            "name": "Test User",
-            "subscribed_topics": []
+            "name": "Test User"
         }
         resp = await client.post("/users", json=user_data)
         assert resp.status_code == status.HTTP_201_CREATED
