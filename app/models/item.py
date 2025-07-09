@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import datetime
 
 class Item(BaseModel):
-    id: Optional[str] = Field(alias="_id")
+    id: Optional[str] = Field(default=None, alias="_id")
     title: str
     content: str
     source_id: str

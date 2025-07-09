@@ -4,7 +4,7 @@ from app.db import collection, db
 from pydantic import BaseModel
 from app.models.subscribe_request import SubscribeRequest
 from app.services.subscription_service import subscribe_user_to_topic, UserNotFoundError
-from app.services.items_service import create_item, read_items
+from app.services.items_service import create_item as create_item_service, read_items as read_items_service
 from app.services.user_service import add_user
 from app.models.user import User
 
@@ -12,11 +12,11 @@ router = APIRouter()
 
 @router.post("/items")
 async def create_item(item: Item):
-    return create_item(item)
+    return await create_item_service(item)
 
 @router.get("/items")
 async def read_items(topic_id: str = None):
-    return read_items(topic_id)
+    return await read_items_service(topic_id)
 
 @router.post("/subscribe")
 async def subscribe_to_topic(req: SubscribeRequest):

@@ -1,4 +1,5 @@
 fastapi
 uvicorn
 mongomock
-pymongo 
+pymongo
+mongomock-motor 
