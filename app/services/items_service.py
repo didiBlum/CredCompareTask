@@ -3,6 +3,8 @@ from app.models.item import Item
 from typing import List, Optional
 from bson import ObjectId
 
+MAX_ITEMS = 20
+
 def to_str_id(doc):
     if doc is None:
         return doc
@@ -29,5 +31,14 @@ async def create_item(item: Item):
 async def read_items(topic_id: Optional[str] = None):
     query = {"topic_id": topic_id} if topic_id else {}
     cursor = collection.find(query, {"_id": 0}) if topic_id else collection.find({}, {"_id": 0})
+    items = [to_str_id(item) async for item in cursor.sort("created_at", -1).limit(MAX_ITEMS)]
+    return {"items": items}
+
+async def get_items_for_user(user_id: str):
+    user = await db["users"].find_one({"_id": ObjectId(user_id)})
+    if not user or not user.get("subscribed_topics"):
+        return {"items": []}
+    query = {"topic_id": {"$in": user["subscribed_topics"]}}
+    cursor = collection.find(query).sort("created_at", -1).limit(MAX_ITEMS)
     items = [to_str_id(item) async for item in cursor]
     return {"items": items} 

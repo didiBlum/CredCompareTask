@@ -45,3 +45,11 @@ curl -X POST "http://127.0.0.1:8000/users" \
     "subscribed_topics": []
   }'
 ```
+
+### Get Items for a User's Subscribed Topics
+Returns up to 20 items from the topics the user is subscribed to, ordered by most recent.
+
+```bash
+curl "http://127.0.0.1:8000/users/USER_ID/items"
+```
+Replace USER_ID with the actual user id.
