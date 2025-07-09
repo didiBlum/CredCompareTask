@@ -5,6 +5,8 @@ from pydantic import BaseModel
 from app.models.subscribe_request import SubscribeRequest
 from app.services.subscription_service import subscribe_user_to_topic, UserNotFoundError
 from app.services.items_service import create_item, read_items
+from app.services.user_service import add_user
+from app.models.user import User
 
 router = APIRouter()
 
@@ -21,4 +23,8 @@ async def subscribe_to_topic(req: SubscribeRequest):
     try:
         return subscribe_user_to_topic(req.user_id, req.topic_name)
     except UserNotFoundError:
-        raise HTTPException(status_code=404, detail="User not found") 
+        raise HTTPException(status_code=404, detail="User not found")
+
+@router.post("/users")
+async def create_user(user: User):
+    return add_user(user) 
