@@ -7,5 +7,5 @@ class Item(BaseModel):
     title: str
     content: str
     source_id: str
-    topic_id: str
-    date_appeared: datetime 
+    topic_name: str
+    created_at: datetime 
