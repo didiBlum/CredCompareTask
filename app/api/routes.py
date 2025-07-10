@@ -15,6 +15,7 @@ from app.db import db
 from datetime import datetime
 from typing import Optional, List
 from app.utils import convert_object_ids_to_str
+from app.services.shared_db import dead_letter_collection
 
 router = APIRouter()
 
@@ -92,4 +93,26 @@ async def get_logs(
             query["error"] = None
     cursor = db["log_events"].find(query).sort("time", -1).skip(skip).limit(limit)
     results = [LogEvent(**convert_object_ids_to_str(doc)) async for doc in cursor]
-    return results 
+    return results
+
+@router.get("/metrics")
+async def metrics():
+    # Count successes and failures for fetch and webhook events
+    fetch_success = await db["log_events"].count_documents({"type": "fetch", "error": None})
+    fetch_fail = await db["log_events"].count_documents({"type": "fetch", "error": {"$ne": None}})
+    webhook_success = await db["log_events"].count_documents({"type": "webhook", "error": None})
+    webhook_fail = await db["log_events"].count_documents({"type": "webhook", "error": {"$ne": None}})
+    return {
+        "fetch": {"success": fetch_success, "fail": fetch_fail},
+        "webhook": {"success": webhook_success, "fail": webhook_fail}
+    }
+
+@router.get("/healthz")
+async def healthz():
+    return {"status": "ok"}
+
+@router.get("/dead_letter")
+async def get_dead_letter_events(limit: int = 20):
+    cursor = dead_letter_collection.find().sort("time", -1).limit(limit)
+    events = [convert_object_ids_to_str(event) async for event in cursor]
+    return {"dead_letter": events} 

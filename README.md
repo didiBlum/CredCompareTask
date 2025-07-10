@@ -101,3 +101,40 @@ curl "http://127.0.0.1:8000/items?topic_name=movies"
 ```
 
 - `topic_name`: Filter by the topic of the item
+
+## Observability
+
+### Health Check
+Check if the service is up and running.
+```bash
+curl http://127.0.0.1:8000/healthz
+```
+Response: `{ "status": "ok" }`
+
+### Metrics
+Get counts of successful and failed fetch and webhook events.
+```bash
+curl http://127.0.0.1:8000/metrics
+```
+Response example:
+```
+{
+  "fetch": {"success": 42, "fail": 3},
+  "webhook": {"success": 17, "fail": 2}
+}
+```
+
+### Dead Letter Events
+Fetch the last 20 dead letter (failed ingestion) events.
+```bash
+curl http://127.0.0.1:8000/dead_letter
+```
+Response example:
+```
+{
+  "dead_letter": [
+    {"source_name": "cred_example_source", "error": "...", "exception": "...", "time": "..."},
+    ...
+  ]
+}
+```

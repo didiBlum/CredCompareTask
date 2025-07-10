@@ -7,6 +7,11 @@ from app.models.log_event import LogEvent
 
 log_collection = db["log_events"]
 
+# Dead letter collection for failed items
+from app.db import db
+
+dead_letter_collection = db["dead_letter"]
+
 async def save_item_to_db(item: Item):
     item_doc = item.dict(by_alias=True, exclude_unset=True)
     # Lookup or create source by name
@@ -29,3 +34,6 @@ async def log_event_to_db(event: LogEvent):
     result = await log_collection.insert_one(event_doc)
     event_doc["_id"] = result.inserted_id
     return event_doc 
+
+async def save_to_dead_letter(doc: dict):
+    await dead_letter_collection.insert_one(doc) 
