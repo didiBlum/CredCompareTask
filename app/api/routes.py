@@ -1,11 +1,10 @@
-from fastapi import APIRouter, HTTPException, status, Request, Query
+from fastapi import APIRouter, HTTPException, status, Request, Query, Body
 from app.models.item import Item
 from app.db import db
 from pydantic import BaseModel
-from app.models.subscribe_request import SubscribeRequest
 from app.services.subscription_service import subscribe_user_to_topic, UserNotFoundError
-from app.services.items_service import create_item as create_item_service, read_items as read_items_service, get_items_for_user, MAX_ITEMS
-from app.services.user_service import add_user
+from app.services.items_service import create_item as create_item_service, read_items as read_items_service, get_items_for_user, MAX_ITEMS, get_all_topics
+from app.services.user_service import add_user, get_user_by_id
 from app.models.user import User
 from app.services.webhook_service import handle_webhook_data
 import logging
@@ -43,16 +42,24 @@ async def read_items(
         by_source=by_source
     )
 
-@router.post("/subscribe")
-async def subscribe_to_topic(req: SubscribeRequest):
+@router.post("/users/{user_id}/topics")
+async def subscribe_to_topic(user_id: str, topic_name: str = Body(..., embed=True)):
     try:
-        return await subscribe_user_to_topic(req.user_id, req.topic_name)
+        return await subscribe_user_to_topic(user_id, topic_name)
     except UserNotFoundError:
         raise HTTPException(status_code=404, detail="User not found")
 
 @router.post("/users", status_code=status.HTTP_201_CREATED)
 async def create_user(user: User):
     return await add_user(user)
+
+@router.get("/users/{user_id}")
+async def get_user(user_id: str):
+    user = await get_user_by_id(user_id)
+    if not user:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 @router.get("/users/{user_id}/items")
 async def get_user_items(user_id: str, order_by: str = "created_at", by_source: bool = True, limit: int = MAX_ITEMS):
@@ -115,4 +122,8 @@ async def healthz():
 async def get_dead_letter_events(limit: int = 20):
     cursor = dead_letter_collection.find().sort("time", -1).limit(limit)
     events = [convert_object_ids_to_str(event) async for event in cursor]
-    return {"dead_letter": events} 
+    return {"dead_letter": events}
+
+@router.get("/topics")
+async def list_topics():
+    return await get_all_topics() 

@@ -1,5 +1,8 @@
 from .cred_example_parser import cred_example_parser
 from .cred_webhook_stream import cred_webhook_stream
+import logging
+import asyncio
+from app.services.shared_db import save_to_dead_letter
 
 SOURCE_HANDLERS = {
     'cred_example_source': cred_example_parser,
@@ -12,9 +15,6 @@ def get_handler_by_name(name):
 # Error handler registry
 
 def sample_error_handler(source, exc, error_details):
-    import logging
-    import asyncio
-    from app.services.shared_db import save_to_dead_letter
     logger = logging.getLogger("sample_error_handler")
     logger.error(f"[Sample Handler] Source: {source.name}, Exception: {exc}, Details: {error_details}")
     # Save to dead letter collection

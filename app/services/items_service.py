@@ -88,4 +88,8 @@ async def get_items_for_user(user_id: str, order_by: str = "created_at", by_sour
         return {"items": items}
     else:
         query = {"topic_id": {"$in": user["subscribed_topics"]}}
-        return await query_items(query, skip=0, limit=limit, by_source=False) 
+        return await query_items(query, skip=0, limit=limit, by_source=False)
+
+async def get_all_topics():
+    topics = await db["topics"].distinct("name")
+    return {"topics": topics} 

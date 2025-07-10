@@ -11,6 +11,7 @@ from sources import get_handler_by_name, get_error_handler_by_name
 from datetime import datetime, timezone
 from app.utils import convert_object_ids_to_str
 import ast
+import base64
 logger = logging.getLogger("source_service")
 
 DEFAULT_TIMEOUT = 30
@@ -47,7 +48,6 @@ class DataSource:
             if self.auth.get("type") == "bearer":
                 headers["Authorization"] = f"Bearer {self.auth['token']}"
             elif self.auth.get("type") == "basic":
-                import base64
                 user = self.auth.get("username", "")
                 pwd = self.auth.get("password", "")
                 headers["Authorization"] = "Basic " + base64.b64encode(f"{user}:{pwd}".encode()).decode()
