@@ -3,22 +3,61 @@ from app.models.log_event import LogEvent
 from datetime import datetime, timezone
 from fastapi import HTTPException
 from app.models.item import Item
-from sources import SOURCE_HANDLERS
+from sources import get_handler_by_name
+import logging
+import traceback
+logger = logging.getLogger("webhook_service")
+
+def default_webhook_handler(data, source):
+    import logging
+    from app.models.item import Item
+    from datetime import datetime, timezone
+    logger = logging.getLogger("webhook_service")
+    # Fill required fields with defaults if missing
+    for field in ["title", "content", "topic_name"]:
+        if not data.get(field):
+            logger.warning(f"[Default Handler] Missing '{field}' in webhook data for source {source}, using default 'unknown'. Data: {data}")
+            data[field] = "unknown"
+    if not data.get("source_name"):
+        data["source_name"] = source
+    if not data.get("created_at"):
+        data["created_at"] = datetime.now(timezone.utc)
+    return Item(**data)
 
 async def handle_webhook_data(data: dict, source: str):
     try:
         data = dict(data)
-        handler = SOURCE_HANDLERS.get(source)
+        handler = get_handler_by_name(source)
+        if not handler:
+            handler = lambda d: default_webhook_handler(d, source)
         items = []
         if handler:
             result = handler(data)
-            if isinstance(result, list):
+            # If the handler returns a dict, coerce to Item with defaults and log warning
+            if isinstance(result, dict):
+                item_dict = dict(result)
+                for field in ["title", "content", "topic_name"]:
+                    if not item_dict.get(field):
+                        logger.warning(f"Missing '{field}' in webhook data for source {source}, using default 'unknown'. Data: {item_dict}")
+                        item_dict[field] = "unknown"
+                if not item_dict.get("source_name"):
+                    item_dict["source_name"] = source
+                if not item_dict.get("created_at"):
+                    item_dict["created_at"] = datetime.now(timezone.utc)
+                items = [Item(**item_dict)]
+            elif isinstance(result, list):
                 items = result
             else:
                 items = [result]
         else:
             # Fallback: treat as single item
             data["source_name"] = source
+            for field in ["title", "content", "topic_name"]:
+                if not data.get(field):
+                    logger.warning(f"Missing '{field}' in webhook data for source {source}, using default 'unknown'. Data: {data}")
+                    data[field] = "unknown"
+            if not data.get("created_at"):
+                data["created_at"] = datetime.now(timezone.utc)
             items = [Item(**data)]
         saved = []
         for item in items:
@@ -31,6 +70,7 @@ async def handle_webhook_data(data: dict, source: str):
         ))
         return saved if len(saved) > 1 else saved[0]
     except Exception as e:
+        logger.error(f"[Webhook Error] Source: {source}, Exception: {type(e).__name__}: {e}\n{traceback.format_exc()}")
         await log_event_to_db(LogEvent(
             source_name=source,
             time=datetime.now(timezone.utc),

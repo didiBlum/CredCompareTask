@@ -1,8 +1,9 @@
 from .cred_example_parser import cred_example_parser
+from .cred_webhook_stream import cred_webhook_stream
 
 SOURCE_HANDLERS = {
     'cred_example_source': cred_example_parser,
-    'cred_example_handler': cred_example_parser,  
+    'cred_webhook_stream': cred_webhook_stream,
 }
 
 def get_handler_by_name(name):
