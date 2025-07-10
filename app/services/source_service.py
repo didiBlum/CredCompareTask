@@ -7,8 +7,10 @@ from app.models.item import Item
 import logging
 import traceback
 from app.models.log_event import LogEvent
+from sources import SOURCE_HANDLERS
 from datetime import datetime, timezone
 from app.utils import convert_object_ids_to_str
+import ast
 logger = logging.getLogger("source_service")
 
 DEFAULT_TIMEOUT = 30
@@ -85,7 +87,10 @@ def load_sources_from_config():
         return []
     with open(CONFIG_PATH) as f:
         config = json.load(f)
-    sources = [DataSource(src["name"], src["url"]) for src in config.get("sources", [])]
+    sources = []
+    for src in config.get("sources", []):
+        handler = SOURCE_HANDLERS.get(src["name"])
+        sources.append(DataSource(src["name"], src["url"], parser=handler))
     return sources
 
 async def fetch_all_sources():
