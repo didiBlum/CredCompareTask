@@ -65,29 +65,30 @@ async def get_items_for_user(user_id: str, order_by: str = "created_at", by_sour
     user = await db["users"].find_one({"_id": ObjectId(user_id)})
     if not user or not user.get("subscribed_topics"):
         return {"items": []}
+    subscriptions = user["subscribed_topics"]
     if by_source:
-        query = {"topic_id": {"$in": user["subscribed_topics"]}}
+        query = {"topic_name": {"$in": subscriptions}}
         return await query_items(query, skip=0, limit=limit, by_source=True)
     if order_by == "topic_first_seen":
         # Find first appearance date for each topic
-        topic_ids = user["subscribed_topics"]
+        topic_names = subscriptions
         topic_first_seen = {}
-        for topic_id in topic_ids:
-            doc = await items_collection.find_one({"topic_id": topic_id}, sort=[("created_at", 1)])
+        for topic_name in topic_names:
+            doc = await items_collection.find_one({"topic_name": topic_name}, sort=[("created_at", 1)])
             if doc:
-                topic_first_seen[topic_id] = doc["created_at"]
+                topic_first_seen[topic_name] = doc["created_at"]
             else:
-                topic_first_seen[topic_id] = None
+                topic_first_seen[topic_name] = None
         # Order topics by first seen date
-        ordered_topics = [tid for tid, _ in sorted(topic_first_seen.items(), key=lambda x: (x[1] is None, x[1]))]
+        ordered_topics = [tname for tname, _ in sorted(topic_first_seen.items(), key=lambda x: (x[1] is None, x[1]))]
         # For each topic, get items ordered by created_at desc
         items = []
-        for topic_id in ordered_topics:
-            cursor = items_collection.find({"topic_id": topic_id}).sort("created_at", -1)
+        for topic_name in ordered_topics:
+            cursor = items_collection.find({"topic_name": topic_name}).sort("created_at", -1)
             items.extend([convert_object_ids_to_str(item) async for item in cursor])
         return {"items": items}
     else:
-        query = {"topic_id": {"$in": user["subscribed_topics"]}}
+        query = {"topic_name": {"$in": subscriptions}}
         return await query_items(query, skip=0, limit=limit, by_source=False)
 
 async def get_all_topics():
