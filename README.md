@@ -216,9 +216,30 @@ Response example:
 
 ## Tests
 
-- Tests are located in the `tests/` directory.
-- To run tests:
+This project uses `pytest` for testing. Tests cover user flows, item ingestion, custom error handling, and handler logic.
+
+### Running All Tests
+
 ```bash
 pytest
 ```
-- Tests cover main user flows, API endpoints, and error handling.
+
+### Running Specific Test Files
+
+Run only error handling tests:
+```bash
+pytest tests/test_errors.py
+```
+
+Run only handler tests:
+```bash
+pytest tests/test_handlers.py
+```
+
+### What is Tested?
+- User and subscription flows
+- Item ingestion and queries
+- Custom error handling (e.g., 409 retry, dead letter logging)
+- Handler logic (e.g., OpenLibrary response parsing)
+
+You can add more tests in the `tests/` directory as needed.
