@@ -6,6 +6,6 @@ class Item(BaseModel):
     id: Optional[str] = Field(default=None, alias="_id")
     title: str
     content: str
-    source_id: str
+    source_name: str
     topic_name: str
     created_at: datetime 

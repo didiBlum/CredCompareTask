@@ -52,3 +52,16 @@ Returns up to 20 items from the topics the user is subscribed to, ordered by mos
 curl "http://127.0.0.1:8000/users/USER_ID/items"
 ```
 Replace USER_ID with the actual user id.
+
+### Webhook: Add Item from External Source
+To add an item via webhook, POST to `/webhook` with the `source` as a query parameter. The request body should be a JSON object representing the item data.
+
+```bash
+curl -X POST "http://127.0.0.1:8000/webhook?source=sourceA" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Webhook Item Example",
+    "content": "This item was sent via webhook.",
+    "topic_name": "Technology"
+  }'
+```

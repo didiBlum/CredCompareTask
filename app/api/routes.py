@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Request
+from fastapi import APIRouter, HTTPException, status, Request, Query
 from app.models.item import Item
 from app.db import collection, db
 from pydantic import BaseModel
@@ -35,8 +35,8 @@ async def get_user_items(user_id: str):
     return await get_items_for_user(user_id)
 
 @router.post("/webhook")
-async def webhook_handler(request: Request):
+async def webhook_handler(request: Request, source: str = Query(...)):
     data = await request.json()
-    print(f"Received data for stream: {data}")
-    item = await handle_webhook_data(data)
+    print(f"Received data for stream: {data}, source: {source}")
+    item = await handle_webhook_data(data, source)
     return {"status": "received", "item": item} 
