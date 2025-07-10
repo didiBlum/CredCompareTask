@@ -1,6 +1,6 @@
 {
   "sources": [
-    {"name": "cred_example_source", "url": "https://credcompare-hr-test-d81ffdfbad0d.herokuapp.com/golf/", "cadence_seconds": 300},
+    {"name": "cred_example_source", "url": "https://credcompare-hr-test-d81ffdfbad0d.herokuapp.com/golf/", "cadence_seconds": 300, "error_handler": "cred_example_error_handler"},
     {"name": "openlibrary_science", "url": "https://openlibrary.org/subjects/science.json?limit=1", "cadence_seconds": 86400, "handler": "openlibrary_science"}
   ]
 }

@@ -149,6 +149,30 @@ The system can fetch and ingest data from external sources on a schedule, with p
 - Each source is fetched in its own background task at its own cadence.
 - Custom error handling and authentication are supported per source.
 
+## Custom Error Handling for Sources
+
+You can provide custom error handling logic for each source in `sources_config.json` by specifying an `error_handler` field. This allows you to handle specific HTTP errors, implement retry logic, or log errors to a dead letter collection.
+
+### Example: Retry on 409 for cred_example_source
+
+For example, the `cred_example_source` uses a custom error handler that:
+- Waits 1 minute and retries if a 409 Conflict error is received
+- Logs all errors to the dead letter collection
+- Returns a consistent error response for other errors
+
+```json
+{
+  "name": "cred_example_source",
+  "url": "https://credcompare-hr-test-d81ffdfbad0d.herokuapp.com/golf/",
+  "cadence_seconds": 300,
+  "error_handler": "cred_example_error_handler"
+}
+```
+
+The handler is implemented in `sources/cred_example_parser.py` and registered in `sources/__init__.py`.
+
+You can implement your own error handler for any source by following this pattern.
+
 ---
 
 ## Observability

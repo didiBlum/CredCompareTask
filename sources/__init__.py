@@ -1,4 +1,4 @@
-from .cred_example_parser import cred_example_parser
+from .cred_example_parser import cred_example_parser, cred_example_error_handler
 from .cred_webhook_stream import cred_webhook_stream
 from .openlibrary_science import openlibrary_science_handler
 import logging
@@ -42,6 +42,8 @@ def sample_error_handler(source, exc, error_details):
 ERROR_HANDLERS = {
     'sample_error_handler': sample_error_handler,
 }
+
+ERROR_HANDLERS["cred_example_error_handler"] = cred_example_error_handler
 
 def get_error_handler_by_name(name):
     return ERROR_HANDLERS.get(name) 
