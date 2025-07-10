@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException, status, Request, Query
 from app.models.item import Item
-from app.db import collection, db
+from app.db import db
 from pydantic import BaseModel
 from app.models.subscribe_request import SubscribeRequest
 from app.services.subscription_service import subscribe_user_to_topic, UserNotFoundError
-from app.services.items_service import create_item as create_item_service, read_items as read_items_service, get_items_for_user
+from app.services.items_service import create_item as create_item_service, read_items as read_items_service, get_items_for_user, MAX_ITEMS
 from app.services.user_service import add_user
 from app.models.user import User
 from app.services.webhook_service import handle_webhook_data
@@ -23,8 +23,24 @@ async def create_item(item: Item):
     return await create_item_service(item)
 
 @router.get("/items")
-async def read_items(topic_id: str = None):
-    return await read_items_service(topic_id)
+async def read_items(
+    topic_name: str = None,
+    source_name: str = None,
+    start_date: str = None,
+    end_date: str = None,
+    skip: int = 0,
+    limit: int = MAX_ITEMS,
+    by_source: bool = True
+):
+    return await read_items_service(
+        topic_name=topic_name,
+        source_name=source_name,
+        start_date=start_date,
+        end_date=end_date,
+        skip=skip,
+        limit=limit,
+        by_source=by_source
+    )
 
 @router.post("/subscribe")
 async def subscribe_to_topic(req: SubscribeRequest):
@@ -38,8 +54,8 @@ async def create_user(user: User):
     return await add_user(user)
 
 @router.get("/users/{user_id}/items")
-async def get_user_items(user_id: str):
-    return await get_items_for_user(user_id)
+async def get_user_items(user_id: str, order_by: str = "created_at", by_source: bool = True, limit: int = MAX_ITEMS):
+    return await get_items_for_user(user_id, order_by=order_by, by_source=by_source, limit=limit)
 
 @router.post("/webhook")
 async def webhook_handler(request: Request, source: str = Query(...)):

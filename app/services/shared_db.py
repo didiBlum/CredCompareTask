@@ -1,4 +1,4 @@
-from app.db import collection, db
+from app.db import items_collection, db
 from bson import ObjectId
 from datetime import datetime, timezone
 from app.utils import convert_object_ids_to_str
@@ -20,7 +20,7 @@ async def save_item_to_db(item: Item):
     now = datetime.now(timezone.utc).isoformat()
     item_doc["created_at"] = now
     item_doc["updated_at"] = now
-    result = await collection.insert_one(item_doc)
+    result = await items_collection.insert_one(item_doc)
     item_doc["_id"] = result.inserted_id
     return convert_object_ids_to_str(item_doc)
 

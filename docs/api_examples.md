@@ -102,3 +102,25 @@ curl "http://127.0.0.1:8000/logs?skip=0&limit=10&start_date=2024-06-01T00:00:00&
 - `source_name`: Filter by source
 - `type`: `fetch` or `webhook`
 - `include_error`: `true` (only errors), `false` (only non-errors) 
+
+## Fetch Items with Filters and Pagination
+You can fetch items with filters for topic name, source name, date range, and pagination. All parameters are optional and can be combined.
+
+```bash
+curl "http://127.0.0.1:8000/items?topic_name=movies&source_name=cred_example_source&start_date=2025-07-10T00:00:00&end_date=2025-07-11T00:00:00&skip=0&limit=10"
+```
+
+- `topic_name`: Filter by the topic of the item
+- `source_name`: Filter by the source of the item
+- `start_date`/`end_date`: Filter by item creation time (ISO format)
+- `skip`: Number of records to skip (for pagination)
+- `limit`: Max number of records to return 
+
+## Fetch Items by Topic Name Only
+You can fetch items for a specific topic using the topic_name filter alone.
+
+```bash
+curl "http://127.0.0.1:8000/items?topic_name=movies"
+```
+
+- `topic_name`: Filter by the topic of the item 
