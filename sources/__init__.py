@@ -2,6 +2,7 @@ from .cred_example_parser import cred_example_parser
 from .cred_webhook_stream import cred_webhook_stream
 from .reddit_top_science import reddit_top_science_handler
 from .reddit_top_food import reddit_top_food_handler
+from .openlibrary_science import openlibrary_science_handler
 import logging
 import asyncio
 from app.services.shared_db import save_to_dead_letter
@@ -11,6 +12,7 @@ SOURCE_HANDLERS = {
     'cred_webhook_stream': cred_webhook_stream,
     'reddit_top_science': reddit_top_science_handler,
     'reddit_top_food': reddit_top_food_handler,
+    'openlibrary_science': openlibrary_science_handler,
 }
 
 def get_handler_by_name(name):
