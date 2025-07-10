@@ -1,8 +1,6 @@
 {
   "sources": [
     {"name": "cred_example_source", "url": "https://credcompare-hr-test-d81ffdfbad0d.herokuapp.com/golf/", "cadence_seconds": 300},
-    {"name": "reddit_top_science", "url": "https://www.reddit.com/r/science/top.json?limit=1", "cadence_seconds": 3600, "handler": "reddit_top_science"},
-    {"name": "reddit_top_food", "url": "https://www.reddit.com/r/food/top.json?limit=1", "cadence_seconds": 18000, "handler": "reddit_top_food"},
     {"name": "openlibrary_science", "url": "https://openlibrary.org/subjects/science.json?limit=1", "cadence_seconds": 86400, "handler": "openlibrary_science"}
   ]
 }
