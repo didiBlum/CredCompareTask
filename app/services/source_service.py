@@ -2,11 +2,13 @@ import httpx
 import asyncio
 import json
 from pathlib import Path
-from app.services.shared_db import save_item_to_db
-from app.services.utils import to_str_id
-import traceback
+from app.services.shared_db import save_item_to_db, log_event_to_db
 from app.models.item import Item
 import logging
+import traceback
+from app.models.log_event import LogEvent
+from datetime import datetime, timezone
+from app.utils import convert_object_ids_to_str
 logger = logging.getLogger("source_service")
 
 DEFAULT_TIMEOUT = 30
@@ -50,11 +52,33 @@ class DataSource:
             # Save all items in parallel
             results = await asyncio.gather(*(save_item_to_db(item) for item in items))
             logger.info(f"[Save] Items saved from {self.name}: {results}")
-            return {"source": self.name, "items": [to_str_id(r) for r in results]}
+            # Log the fetch event
+            await log_event_to_db(LogEvent(
+                source_name=self.name,
+                time=datetime.now(timezone.utc),
+                items_saved=len(results),
+                type="fetch"
+            ))
+            return {"source": self.name, "items": [convert_object_ids_to_str(r) for r in results]}
         except Exception as e:
-            logger.error(f"[Error] Fetch or save failed for {self.name}: {type(e).__name__}: {e}")
+            error_details = f"{type(e).__name__}: {e}"
+            if isinstance(e, httpx.HTTPStatusError):
+                try:
+                    error_body = e.response.text
+                    error_details += f" | Response body: {error_body}"
+                except Exception as inner:
+                    error_details += f" | (Failed to get response body: {inner})"
+            logger.error(f"[Error] Fetch or save failed for {self.name}: {error_details}")
             logger.debug(traceback.format_exc())
-            return {"source": self.name, "error": f"{type(e).__name__}: {e}"}
+            # Log the error event
+            await log_event_to_db(LogEvent(
+                source_name=self.name,
+                time=datetime.now(timezone.utc),
+                items_saved=0,
+                error=error_details,
+                type="fetch"
+            ))
+            return {"source": self.name, "error": error_details}
 
 def load_sources_from_config():
     if not CONFIG_PATH.exists():

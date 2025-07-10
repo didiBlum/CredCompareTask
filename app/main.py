@@ -3,6 +3,8 @@ import asyncio
 from app.api.routes import router
 from app.services.source_service import fetch_all_sources
 import logging
+import os
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 logger = logging.getLogger("main")
 
 PERIODIC_FETCH_INTERVAL_SECONDS = 600  # 10 minutes

@@ -65,3 +65,17 @@ curl -X POST "http://127.0.0.1:8000/webhook?source=sourceA" \
     "topic_name": "Technology"
   }'
 ```
+
+### Fetch Log Events (with Filters and Pagination)
+You can fetch log events with filters for date, source, type, and error presence. All parameters are optional.
+
+```bash
+curl "http://127.0.0.1:8000/logs?skip=0&limit=10&start_date=2024-06-01T00:00:00&end_date=2024-06-10T23:59:59&source_name=sourceA&type=fetch&include_error=false"
+```
+
+- `skip`: Number of records to skip (for pagination)
+- `limit`: Max number of records to return
+- `start_date`/`end_date`: Filter by event time (ISO format)
+- `source_name`: Filter by source
+- `type`: `fetch` or `webhook`
+- `include_error`: `true` (only errors), `false` (only non-errors)

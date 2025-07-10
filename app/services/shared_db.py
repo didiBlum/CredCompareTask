@@ -1,8 +1,11 @@
 from app.db import collection, db
 from bson import ObjectId
 from datetime import datetime, timezone
-from app.services.utils import to_str_id
+from app.utils import convert_object_ids_to_str
 from app.models.item import Item
+from app.models.log_event import LogEvent
+
+log_collection = db["log_events"]
 
 async def save_item_to_db(item: Item):
     item_doc = item.dict(by_alias=True, exclude_unset=True)
@@ -19,4 +22,10 @@ async def save_item_to_db(item: Item):
     item_doc["updated_at"] = now
     result = await collection.insert_one(item_doc)
     item_doc["_id"] = result.inserted_id
-    return to_str_id(item_doc) 
+    return convert_object_ids_to_str(item_doc)
+
+async def log_event_to_db(event: LogEvent):
+    event_doc = event.dict(by_alias=True, exclude_unset=True)
+    result = await log_collection.insert_one(event_doc)
+    event_doc["_id"] = result.inserted_id
+    return event_doc 
