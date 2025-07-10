@@ -1,5 +1,5 @@
 {
   "sources": [
-    {"name": "cred_example_source", "url": "https://credcompare-hr-test-d81ffdfbad0d.herokuapp.com/golf/"}
+    {"name": "cred_example_source", "url": "https://credcompare-hr-test-d81ffdfbad0d.herokuapp.com/golf/", "cadence_seconds": 300}
   ]
 }
