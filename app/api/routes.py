@@ -8,6 +8,8 @@ from app.services.items_service import create_item as create_item_service, read_
 from app.services.user_service import add_user
 from app.models.user import User
 from app.services.webhook_service import handle_webhook_data
+import logging
+logger = logging.getLogger("api")
 
 router = APIRouter()
 
@@ -37,6 +39,6 @@ async def get_user_items(user_id: str):
 @router.post("/webhook")
 async def webhook_handler(request: Request, source: str = Query(...)):
     data = await request.json()
-    print(f"Received data for stream: {data}, source: {source}")
+    logger.info(f"Received data for stream: {data}, source: {source}")
     item = await handle_webhook_data(data, source)
     return {"status": "received", "item": item} 

@@ -6,15 +6,17 @@ from app.services.shared_db import save_item_to_db
 from app.services.utils import to_str_id
 import traceback
 from app.models.item import Item
+import logging
+logger = logging.getLogger("source_service")
 
-DEFAULT_TIMEOUT = 5  # seconds
+DEFAULT_TIMEOUT = 30
 CONFIG_PATH = Path("sources_config.json")
 
 class DataSource:
     def __init__(self, name, url, parser=None):
         self.name = name
         self.url = url
-        self.parser = parser  # Optional custom parser function
+        self.parser = parser  # Custom parser function
 
     def parse(self, data) -> Item:
         if self.parser:
@@ -33,11 +35,13 @@ class DataSource:
             resp = await client.get(self.url)
             resp.raise_for_status()
             data = resp.json()
+            logger.debug(f"[Fetch] Raw data received from {self.name}: {data}")
             if isinstance(data, list):
                 return [self.parse(item) for item in data]
             elif isinstance(data, dict):
                 return [self.parse(data)]
             else:
+                logger.warning(f"[Fetch] Unexpected data format from {self.name}: {data}")
                 return []
 
     async def fetch_and_save(self):
@@ -45,11 +49,11 @@ class DataSource:
             items = await self.fetch_items()
             # Save all items in parallel
             results = await asyncio.gather(*(save_item_to_db(item) for item in items))
-            print(f"[Save] Items saved from {self.name}: {results}")
+            logger.info(f"[Save] Items saved from {self.name}: {results}")
             return {"source": self.name, "items": [to_str_id(r) for r in results]}
         except Exception as e:
-            print(f"[Error] Fetch or save failed for {self.name}: {type(e).__name__}: {e}")
-            traceback.print_exc()
+            logger.error(f"[Error] Fetch or save failed for {self.name}: {type(e).__name__}: {e}")
+            logger.debug(traceback.format_exc())
             return {"source": self.name, "error": f"{type(e).__name__}: {e}"}
 
 def load_sources_from_config():
