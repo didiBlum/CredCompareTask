@@ -8,11 +8,8 @@ import logging
 import traceback
 logger = logging.getLogger("webhook_service")
 
-def default_webhook_handler(data, source):
-    import logging
-    from app.models.item import Item
-    from datetime import datetime, timezone
-    logger = logging.getLogger("webhook_service")
+async def default_webhook_handler(request, source):
+    data = await request.json()
     # Fill required fields with defaults if missing
     for field in ["title", "content", "topic_name"]:
         if not data.get(field):
@@ -24,41 +21,28 @@ def default_webhook_handler(data, source):
         data["created_at"] = datetime.now(timezone.utc)
     return Item(**data)
 
-async def handle_webhook_data(data: dict, source: str):
+async def handle_webhook_data(request, source: str):
     try:
-        data = dict(data)
         handler = get_handler_by_name(source)
         if not handler:
-            handler = lambda d: default_webhook_handler(d, source)
-        items = []
-        if handler:
-            result = handler(data)
-            # If the handler returns a dict, coerce to Item with defaults and log warning
-            if isinstance(result, dict):
-                item_dict = dict(result)
-                for field in ["title", "content", "topic_name"]:
-                    if not item_dict.get(field):
-                        logger.warning(f"Missing '{field}' in webhook data for source {source}, using default 'unknown'. Data: {item_dict}")
-                        item_dict[field] = "unknown"
-                if not item_dict.get("source_name"):
-                    item_dict["source_name"] = source
-                if not item_dict.get("created_at"):
-                    item_dict["created_at"] = datetime.now(timezone.utc)
-                items = [Item(**item_dict)]
-            elif isinstance(result, list):
-                items = result
-            else:
-                items = [result]
-        else:
-            # Fallback: treat as single item
-            data["source_name"] = source
+            handler = lambda req: default_webhook_handler(req, source)
+        result = await handler(request)
+        # If the handler returns a dict, coerce to Item with defaults and log warning
+        if isinstance(result, dict):
+            item_dict = dict(result)
             for field in ["title", "content", "topic_name"]:
-                if not data.get(field):
-                    logger.warning(f"Missing '{field}' in webhook data for source {source}, using default 'unknown'. Data: {data}")
-                    data[field] = "unknown"
-            if not data.get("created_at"):
-                data["created_at"] = datetime.now(timezone.utc)
-            items = [Item(**data)]
+                if not item_dict.get(field):
+                    logger.warning(f"Missing '{field}' in webhook data for source {source}, using default 'unknown'. Data: {item_dict}")
+                    item_dict[field] = "unknown"
+            if not item_dict.get("source_name"):
+                item_dict["source_name"] = source
+            if not item_dict.get("created_at"):
+                item_dict["created_at"] = datetime.now(timezone.utc)
+            items = [Item(**item_dict)]
+        elif isinstance(result, list):
+            items = result
+        else:
+            items = [result]
         saved = []
         for item in items:
             saved.append(await save_item_to_db(item))

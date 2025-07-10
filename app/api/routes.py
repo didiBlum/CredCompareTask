@@ -67,9 +67,8 @@ async def get_user_items(user_id: str, order_by: str = "created_at", by_source: 
 
 @router.post("/webhook")
 async def webhook_handler(request: Request, source: str = Query(...)):
-    data = await request.json()
-    logger.info(f"Received data for stream: {data}, source: {source}")
-    item = await handle_webhook_data(data, source)
+    logger.info(f"Received webhook for source: {source}")
+    item = await handle_webhook_data(request, source)
     return {"status": "received", "item": item}
 
 @router.get("/logs", response_model=List[LogEvent])

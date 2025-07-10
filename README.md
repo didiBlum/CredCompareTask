@@ -14,7 +14,7 @@ You can access it here: https://credcompare-task-6c8c449b6667.herokuapp.com/
 
 #### Add a User
 ```bash
-curl -X POST "http://127.0.0.1:8000/users" \
+curl -X POST "https://credcompare-task-6c8c449b6667.herokuapp.com/users" \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user123@example.com",
@@ -25,7 +25,7 @@ curl -X POST "http://127.0.0.1:8000/users" \
 #### Subscribe to a Topic
 Subscribe a user to a topic by user id.
 ```bash
-curl -X POST "http://127.0.0.1:8000/users/USER_ID/topics" \
+curl -X POST "https://credcompare-task-6c8c449b6667.herokuapp.com/users/USER_ID/topics" \
   -H "Content-Type: application/json" \
   -d '{"topic_name": "TOPIC_NAME_HERE"}'
 ```
@@ -34,7 +34,7 @@ Replace USER_ID with the actual user id.
 #### Get Items for a User's Subscribed Topics
 Returns up to 20 items from the topics the user is subscribed to, ordered by most recent (or grouped by source by default).
 ```bash
-curl "http://127.0.0.1:8000/users/USER_ID/items?by_source=true&order_by=created_at"
+curl "https://credcompare-task-6c8c449b6667.herokuapp.com/users/USER_ID/items?by_source=true&order_by=created_at"
 ```
 - `by_source`: Group items by source (default: true)
 - `order_by`: `created_at` (default) or `topic_first_seen`
@@ -43,7 +43,7 @@ curl "http://127.0.0.1:8000/users/USER_ID/items?by_source=true&order_by=created_
 #### Get User Details by User ID
 Fetch a user's details by their user id.
 ```bash
-curl "http://127.0.0.1:8000/users/USER_ID"
+curl "https://credcompare-task-6c8c449b6667.herokuapp.com/users/USER_ID"
 ```
 Replace USER_ID with the actual user id.
 
@@ -54,7 +54,7 @@ Replace USER_ID with the actual user id.
 #### Add an Item
 > If the topic with the given `topic_name` does not exist, it will be automatically created with that name.
 ```bash
-curl -X POST "http://127.0.0.1:8000/items" \
+curl -X POST "https://credcompare-task-6c8c449b6667.herokuapp.com/items" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Sample Item",
@@ -67,7 +67,7 @@ curl -X POST "http://127.0.0.1:8000/items" \
 #### List All Topics
 Fetch all topic names in the system.
 ```bash
-curl "http://127.0.0.1:8000/topics"
+curl "https://credcompare-task-6c8c449b6667.herokuapp.com/topics"
 ```
 Response example:
 ```
@@ -78,13 +78,13 @@ Response example:
 
 #### List Topics
 ```bash
-curl "http://127.0.0.1:8000/topics"
+curl "https://credcompare-task-6c8c449b6667.herokuapp.com/topics"
 ```
 
 #### Fetch Items (with Filters and Pagination)
 Fetch items with filters for topic name, source name, date range, and pagination. All parameters are optional and can be combined.
 ```bash
-curl "http://127.0.0.1:8000/items?topic_name=movies&source_name=cred_example_source&start_date=2025-07-10T00:00:00&end_date=2025-07-11T00:00:00&skip=0&limit=10&by_source=true"
+curl "https://credcompare-task-6c8c449b6667.herokuapp.com/items?topic_name=movies&source_name=cred_example_source&start_date=2025-07-10T00:00:00&end_date=2025-07-11T00:00:00&skip=0&limit=10&by_source=true"
 ```
 - `topic_name`: Filter by the topic of the item
 - `source_name`: Filter by the source of the item
@@ -95,7 +95,7 @@ curl "http://127.0.0.1:8000/items?topic_name=movies&source_name=cred_example_sou
 
 #### Fetch Items by Topic Name Only
 ```bash
-curl "http://127.0.0.1:8000/items?topic_name=movies"
+curl "https://credcompare-task-6c8c449b6667.herokuapp.com/items?topic_name=movies"
 ```
 
 ---
@@ -105,7 +105,7 @@ curl "http://127.0.0.1:8000/items?topic_name=movies"
 To add an item via webhook, POST to `/webhook` with the `source` as a query parameter. The request body should be a JSON object representing the item data.
 
 ```bash
-curl -X POST "http://127.0.0.1:8000/webhook?source=sourceA" \
+curl -X POST "https://credcompare-task-6c8c449b6667.herokuapp.com/webhook?source=sourceA" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Webhook Item Example",
@@ -115,6 +115,23 @@ curl -X POST "http://127.0.0.1:8000/webhook?source=sourceA" \
 ```
 - The correct handler will be used based on the source name.
 - You can add custom webhook authentication and error handling per source.
+
+## Example: Testing the Custom Webhook Handler
+
+The `/webhook?source=test` endpoint demonstrates custom webhook security and handler logic. It requires a special header for authentication:
+
+```bash
+curl -X POST "$WEBHOOK_HOST/webhook?source=test" \
+  -H "Content-Type: application/json" \
+  -H "X-Test-Webhook-Secret: testsecret" \
+  -d '{
+    "title": "Triggered item",
+    "content": "Random content 1234",
+    "topic": "interviews"
+  }'
+```
+
+If the secret is missing or incorrect, the request will be rejected with a 401 error. This pattern demonstrates how to implement custom security and logic for specific webhook sources.
 
 ---
 
@@ -180,14 +197,14 @@ You can implement your own error handler for any source by following this patter
 ### Health Check
 Check if the service is up and running.
 ```bash
-curl http://127.0.0.1:8000/healthz
+curl https://credcompare-task-6c8c449b6667.herokuapp.com/healthz
 ```
 Response: `{ "status": "ok" }`
 
 ### Metrics
 Get counts of successful and failed fetch and webhook events.
 ```bash
-curl http://127.0.0.1:8000/metrics
+curl https://credcompare-task-6c8c449b6667.herokuapp.com/metrics
 ```
 Response example:
 ```
@@ -200,7 +217,7 @@ Response example:
 ### Dead Letter Events
 Fetch the last 20 dead letter (failed ingestion) events.
 ```bash
-curl http://127.0.0.1:8000/dead_letter
+curl https://credcompare-task-6c8c449b6667.herokuapp.com/dead_letter
 ```
 Response example:
 ```
@@ -243,3 +260,23 @@ pytest tests/test_handlers.py
 - Handler logic (e.g., OpenLibrary response parsing)
 
 You can add more tests in the `tests/` directory as needed.
+
+# Solution Overview
+
+This app is an async FastAPI backend for aggregating and serving data from multiple sources, with user subscriptions and robust error handling. It is designed for extensibility, reliability, and clarity, following production-style best practices.
+
+**Key Features:**
+- **Async FastAPI API**: All endpoints and background tasks use asyncio for high concurrency and responsiveness.
+- **MongoDB (mongomock)**: Uses MongoDB for data storage (with mongomock for local/testing, no real DB required).
+- **Pluggable Sources & Handlers**: Easily add new data sources and custom parsing/ingestion logic via handler registration.
+- **User/Topic/Item Model**: Users can subscribe to topics; items are fetched from sources and tagged with topic and source.
+- **Custom Error Handling**: Per-source error handlers support retries, dead letter logging, and custom logic for reliability.
+- **Observability**: All errors and fetch events are logged; dead letter collection and metrics endpoints are provided.
+- **Test Coverage**: Includes tests for user flows, handler logic, and error handling, using pytest and asyncio.
+
+**Design Choices:**
+- No frontend; API-only, with clear docs and README examples.
+- All code is modular and extensible and clear separation of concerns.
+- Handles real-world data issues: timeouts, bad responses, retries, and missing fields.
+
+See above for API usage, configuration, and testing instructions.

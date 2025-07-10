@@ -1,6 +1,7 @@
 from .cred_example_parser import cred_example_parser, cred_example_error_handler
 from .cred_webhook_stream import cred_webhook_stream
 from .openlibrary_science import openlibrary_science_handler
+from .test_webhook_parser import test_webhook_parser
 import logging
 import asyncio
 from app.services.shared_db import save_to_dead_letter
@@ -9,6 +10,7 @@ SOURCE_HANDLERS = {
     'cred_example_source': cred_example_parser,
     'cred_webhook_stream': cred_webhook_stream,
     'openlibrary_science': openlibrary_science_handler,
+    'test': test_webhook_parser,
 }
 
 def get_handler_by_name(name):
